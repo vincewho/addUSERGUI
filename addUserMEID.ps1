@@ -6,22 +6,26 @@
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-function Get-OnePerson{
-	Param (
-		[Parameter(Mandatory=$true)] [string] $usermeid
-		)
-    $output = $PSScriptRoot + '\output.csv'
-	Get-ADUser -filter * -Server "mcccd.org"  -Properties EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName -SearchBase "OU=Employees,OU=MARICOPA,DC=mcccd,DC=org" | 
-	Select-Object EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName | 
-	Where-Object { $_.mccdLogonID -eq $usermeid } | 
-	ConvertTo-Csv -NoTypeInformation | 
-	% {$_.Replace('"','')} | 
-	Out-File $output -Force
-}
+# function Get-OnePerson{
+# 	Param (
+# 		[Parameter(Mandatory=$true)] [string] $usermeid
+# 		)
+#     $output = $PSScriptRoot + '\output.csv'
+# 	Get-ADUser -filter * -Server "mcccd.org"  -Properties EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName -SearchBase "OU=Employees,OU=MARICOPA,DC=mcccd,DC=org" | 
+# 	Select-Object EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName | 
+# 	Where-Object { $_.mccdLogonID -eq $usermeid } | 
+# 	ConvertTo-Csv -NoTypeInformation | 
+# 	% {$_.Replace('"','')} | 
+# 	Out-File $output -Force
+# }
 
-$on_click = { 
-    Get-OnePerson $meid_txtbox.Text
-    $Form.Close()
+# $on_click = { 
+#     Get-OnePerson $meid_txtbox.Text
+#     $Form.Close()
+# }
+
+$on_click = {
+	$Form.Close()
 }
 
 ##############################
