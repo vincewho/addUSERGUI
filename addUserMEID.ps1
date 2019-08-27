@@ -3,67 +3,76 @@
     Untitled
 #>
 
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.Application]::EnableVisualStyles()
 
-# function Get-OnePerson{
-# 	Param (
-# 		[Parameter(Mandatory=$true)] [string] $usermeid
-# 		)
-#     $output = $PSScriptRoot + '\output.csv'
-# 	Get-ADUser -filter * -Server "mcccd.org"  -Properties EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName -SearchBase "OU=Employees,OU=MARICOPA,DC=mcccd,DC=org" | 
-# 	Select-Object EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName | 
-# 	Where-Object { $_.mccdLogonID -eq $usermeid } | 
-# 	ConvertTo-Csv -NoTypeInformation | 
-# 	% {$_.Replace('"','')} | 
-# 	Out-File $output -Force
-# }
+function Get-OnePerson{
+	Param (
+		[Parameter(Mandatory=$true)] [string] $usermeid
+		)
+    # $output = $PSScriptRoot + '\output.csv'
+    $output = '\\it14\scripts\id_card\output.csv'
+	Get-ADUser -filter * -Server "mcccd.org"  -Properties EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName -SearchBase "OU=Employees,OU=MARICOPA,DC=mcccd,DC=org" | 
+	Select-Object EmployeeID,Created,whenChanged,Surname,GivenName,middleName,mccdLogonID,mccdEmployeeTypeDesc,mccdStudentID,Title,CanonicalName | 
+	Where-Object { $_.mccdLogonID -eq $usermeid } | 
+	ConvertTo-Csv -NoTypeInformation | 
+	% {$_.Replace('"','')} | 
+	Out-File $output -Force
+}
 
-# $on_click = { 
-#     Get-OnePerson $meid_txtbox.Text
-#     $Form.Close()
-# }
+function Start-Job{
+		$sqlserver = 'it14'
+		$job = 'NewIDcardFeed'
+		Start-DbaAgentJob -SqlInstance $sqlserver -Job $job
+}
 
-$on_click = {
-	$Form.Close()
+$on_click = { 
+    # Get-OnePerson $meid_txtbox.Text
+    # Start-Job
+    $Form.Close()
 }
 
 ##############################
 # Creat the form
 ##############################
 
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
 $Form                            = New-Object system.Windows.Forms.Form
-$Form.ClientSize                 = '355,125'
-$Form.text                       = "Add User"
+$Form.ClientSize                 = '413,119'
+$Form.text                       = "AddForm"
 $Form.TopMost                    = $false
 
-# Text to specify the input
-$meid_lbl                        = New-Object system.Windows.Forms.Label
-$meid_lbl.text                   = "Enter MEID:"
-$meid_lbl.AutoSize               = $true
-$meid_lbl.width                  = 25
-$meid_lbl.height                 = 10
-$meid_lbl.location               = New-Object System.Drawing.Point(47,28)
-$meid_lbl.Font                   = 'Microsoft Sans Serif,10'
-
-# area to input text
 $meid_txtbox                     = New-Object system.Windows.Forms.TextBox
 $meid_txtbox.multiline           = $false
-$meid_txtbox.width               = 163
+$meid_txtbox.width               = 171
 $meid_txtbox.height              = 20
-$meid_txtbox.location            = New-Object System.Drawing.Point(135,24)
+$meid_txtbox.location            = New-Object System.Drawing.Point(141,24)
 $meid_txtbox.Font                = 'Microsoft Sans Serif,10'
 
-##############################
-# Create Button
-##############################
-# Button to submit text
 $add_btn                         = New-Object system.Windows.Forms.Button
 $add_btn.text                    = "Add"
 $add_btn.width                   = 60
 $add_btn.height                  = 30
-$add_btn.location                = New-Object System.Drawing.Point(135,64)
+$add_btn.location                = New-Object System.Drawing.Point(186,80)
 $add_btn.Font                    = 'Microsoft Sans Serif,10'
+
+$meid_lbl                        = New-Object system.Windows.Forms.Label
+$meid_lbl.text                   = "MEID"
+$meid_lbl.AutoSize               = $true
+$meid_lbl.width                  = 25
+$meid_lbl.height                 = 10
+$meid_lbl.location               = New-Object System.Drawing.Point(88,30)
+$meid_lbl.Font                   = 'Microsoft Sans Serif,10'
+
+$notice_lbl                      = New-Object system.Windows.Forms.Label
+$notice_lbl.text                 = "There will be a delay of around 20 seconds before this box closes"
+$notice_lbl.AutoSize             = $true
+$notice_lbl.width                = 25
+$notice_lbl.height               = 10
+$notice_lbl.location             = New-Object System.Drawing.Point(14,56)
+$notice_lbl.Font                 = 'Microsoft Sans Serif,10'
+
+$Form.controls.AddRange(@($meid_txtbox,$add_btn,$meid_lbl,$notice_lbl))
 
 ##############################
 # When Button is pressed
@@ -71,10 +80,5 @@ $add_btn.Font                    = 'Microsoft Sans Serif,10'
 
 $add_btn.Add_Click($on_click)
 
-##############################
-# Creating items in form
-##############################
-
-$Form.controls.AddRange(@($meid_lbl,$add_btn,$meid_txtbox))
 
 [void]$Form.ShowDialog()
