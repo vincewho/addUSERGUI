@@ -31,7 +31,6 @@ function Find-Person {
 	$sqlserver = 'it14'
 	$db = 'idCard'
 	$query = "Select * from dbo.EPI_PERSON where MEID = '$usermeid'"
-	$exist = $null
 	Invoke-DbaQuery -SqlInstance $sqlserver -Database $db -Query $query
 }
 
