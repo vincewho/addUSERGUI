@@ -3,10 +3,12 @@
     Untitled
 #>
 
+[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") 
+[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") 
 
 function Get-OnePerson{
 	Param (
-		[Parameter(Mandatory=$true)] [string] $usermeid
+		[Parameter(Mandatory=$false)] [string] $usermeid
 		)
     # $output = $PSScriptRoot + '\output.csv'
     $output = '\\it14\scripts\id_card\output.csv'
@@ -26,7 +28,7 @@ function Start-Job{
 
 function Find-Person {
 	Param (
-		[Parameter(Mandatory=$true)] [string] $usermeid
+		[Parameter(Mandatory=$false)] [string] $usermeid
 		)
 	$sqlserver = 'it14'
 	$db = 'idCard'
@@ -35,13 +37,13 @@ function Find-Person {
 }
 
 $on_click = { 
-    # Get-OnePerson $meid_txtbox.Text
-    # Start-Job
+    Get-OnePerson $meid_txtbox.Text
+    Start-Job
     $Form.Close()
 }
 
 $chk_click = {
-    $person = $null
+    $person = ""
     $person = Find-Person -usermeid $meid_txtbox.Text
     if ($person -ne $null ){
         [System.Windows.Forms.MessageBox]::Show("User is found" , "Find User")
@@ -74,12 +76,12 @@ $add_btn.height                  = 30
 $add_btn.location                = New-Object System.Drawing.Point(200,80)
 $add_btn.Font                    = 'Microsoft Sans Serif,10'
 
-$check_btn                         = New-Object system.Windows.Forms.Button
-$check_btn.text                    = "Check"
-$check_btn.width                   = 60
-$check_btn.height                  = 30
-$check_btn.location                = New-Object System.Drawing.Point(100,80)
-$check_btn.Font                    = 'Microsoft Sans Serif,10'
+$check_btn                       = New-Object system.Windows.Forms.Button
+$check_btn.text                  = "Check"
+$check_btn.width                 = 60
+$check_btn.height                = 30
+$check_btn.location              = New-Object System.Drawing.Point(100,80)
+$check_btn.Font                  = 'Microsoft Sans Serif,10'
 
 
 $meid_lbl                        = New-Object system.Windows.Forms.Label
