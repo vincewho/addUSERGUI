@@ -57,7 +57,7 @@ do{
    switch ($selected) {
        '1' { copy_user }
        '2' { move_appdata }
-       '3' { createI_sDrive }
+       '3' { create_sDrive }
        Default { $selected = 'q' }
    }
    Pause
