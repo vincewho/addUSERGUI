@@ -15,6 +15,10 @@ function add_to_domain {
     Restart-Computer -Force
 }
 
+function hello_world{
+    [System.Windows.MessageBox]::Show('Hello World')
+}
+
 ##############################################
 #####################GUI START################
 ##############################################
@@ -51,4 +55,10 @@ $machine_name_label.Font         = 'Microsoft Sans Serif,10'
 
 $ADTest.controls.AddRange(@($submit_button,$machine_name_box,$machine_name_label))
 
+##################################################
+##################### FORM EVENTS ################
+##################################################
 
+$submit_button.Add_Click({
+    hello_world
+})
