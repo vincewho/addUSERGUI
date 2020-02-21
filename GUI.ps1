@@ -60,5 +60,5 @@ $ADTest.controls.AddRange(@($submit_button,$machine_name_box,$machine_name_label
 ##################################################
 
 $submit_button.Add_Click({
-    hello_world
+    hello_world + $machine_name_box.text
 })
