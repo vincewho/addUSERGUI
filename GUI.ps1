@@ -5,18 +5,13 @@
 
 function add_to_domain {
     Param(
-        [String]
-            $new_machine_name
+        [String] $new_machine_name
     )
     Rename-Computer -NewName $new_machine_name
 
-    Add-Computer -Domainname corp.kbkg.com -Credential Get-Credential
+    # Add-Computer -Domainname corp.kbkg.com -Credential Get-Credential
 
-    Restart-Computer -Force
-}
-
-function hello_world{
-    [System.Windows.MessageBox]::Show('Hello World')
+    # Restart-Computer -Force
 }
 
 ##############################################
@@ -55,15 +50,13 @@ $machine_name_label.Font         = 'Microsoft Sans Serif,10'
 
 $ADTest.controls.AddRange(@($submit_button,$machine_name_box,$machine_name_label))
 
-
-
 ##################################################
 ##################### FORM EVENTS ################
 ##################################################
 
 
 $submit_button.Add_Click({
-    Write-Output 'Hello'
+    add_to_domain -new_machine_name $machine_name_box.text
 })
 
 ##################################################
