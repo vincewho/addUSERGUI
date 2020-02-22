@@ -55,10 +55,19 @@ $machine_name_label.Font         = 'Microsoft Sans Serif,10'
 
 $ADTest.controls.AddRange(@($submit_button,$machine_name_box,$machine_name_label))
 
+
+
 ##################################################
 ##################### FORM EVENTS ################
 ##################################################
 
+
 $submit_button.Add_Click({
-    hello_world + $machine_name_box.text
+    Write-Output 'Hello'
 })
+
+##################################################
+####################### END ######################
+##################################################
+
+$Null = $ADTest.ShowDialog()
