@@ -22,10 +22,10 @@ $listbox                         = New-Object system.Windows.Forms.ListBox
 $listbox.text                    = "listBox"
 $listbox.width                   = 750
 $listbox.height                  = 140
-$listbox.location                = New-Object System.Drawing.Point(25,60)
+$listbox.location                = New-Object System.Drawing.Point(25,59)
 
 $select_btn                      = New-Object system.Windows.Forms.Button
-$select_btn.text                 = "Select"
+$select_btn.text                 = "Select User"
 $select_btn.width                = 100
 $select_btn.height               = 30
 $select_btn.location             = New-Object System.Drawing.Point(25,210)
@@ -111,20 +111,39 @@ function new-kbkguser {
 
 function get-selected { 
     param (
+        $selected = $listbox.SelectedItem
     )
-    Write-Host $listbox.SelectedItem
-    $selected_info_txt.Text = "You have selected: " + $listbox.SelectedItem.'First Name:' + " " + $listbox.SelectedItem.'Last Name:' 
+    $hash = $selected.Split(" ")
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
+
+    $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
+    
+    Write-Host $select_usr
+    $selected_info_txt.Text = "You have selected: " + $select_usr.'First Name:' + " " + $select_usr.'Last Name:' 
 }
+
+# function get-kbkgUser {
+#     $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
+
+#     foreach($user in $users){
+#         $user.PSObject.Properties.Remove('Start time')
+#         $user.PSObject.Properties.Remove('Completion time')
+#         $user.PSObject.Properties.Remove('Email')
+#         $user.PSObject.Properties.Remove('Name')
+#         $listbox.Items.Add($user)
+#     }
+# }
 
 function get-kbkgUser {
     $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
-
+    $listbox.Items.Clear()
+    
     foreach($user in $users){
         $user.PSObject.Properties.Remove('Start time')
         $user.PSObject.Properties.Remove('Completion time')
         $user.PSObject.Properties.Remove('Email')
         $user.PSObject.Properties.Remove('Name')
-        $listbox.Items.Add($user)
+        $listbox.Items.Add(($user."First Name:").Trim() + " " + ($user."Last Name:").Trim() + " in " + $user."Department:")
     }
 }
 
@@ -145,3 +164,5 @@ catch {
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
 [void]$adgui.ShowDialog()
+
+
