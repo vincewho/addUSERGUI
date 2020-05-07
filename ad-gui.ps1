@@ -1,6 +1,6 @@
 <# This form was created using POSHGUI.com  a free online gui designer for PowerShell
 .NAME
-    adgui
+    KBKG adgui
 #>
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -57,22 +57,25 @@ function new-kbkguser {
 
     while ($template_user -eq $null) {
         Write-Host "The Profile to use was not found."
-        $user = Read-Host "Try entering another user"
-        $template_user = Get-ADUser -Filter "Name -Like ""$($user)""" -properties Company, Department, Manager, MemberOf, Office, PrimaryGroup, ScriptPath, Title, GivenName, Surname, Mail
+        $title = 'Replacement Template User'
+        $msg = 'Enter new User: Use full name'
+        $usr_name = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title)
+
+        $template_user = Get-ADUser -Filter "Name -Like ""$($usr_name)""" -properties Company, Department, Manager, MemberOf, Office, PrimaryGroup, ScriptPath, Title, GivenName, Surname, Mail
     }
 
     $template_user.UserPrincipalName = $null
-    $template_user.GivenName = $last_user.'First Name:'.Trim()
-    $template_user.Surname = $last_user.'Last Name:'.Trim()
-    $template_user.Mail = ($last_user.'First Name:'.Trim()+"."+$last_user.'Last Name:'.Trim()+"@"+$last_user.'Email address:').ToLower()
+    $template_user.GivenName = $listbox.SelectedItem.'First Name:'.Trim()
+    $template_user.Surname = $listbox.SelectedItem.'Last Name:'.Trim()
+    $template_user.Mail = ($listbox.SelectedItem.'First Name:'.Trim()+"."+$listbox.SelectedItem.'Last Name:'.Trim()+"@"+$listbox.SelectedItem.'Email address:').ToLower()
 
     # Create user 
     ## $last_user variable is used but can probably be changed to something more useful later
-    $name = $last_user.'First Name:'.Trim() + " " + $last_user.'Last Name:'.Trim()
-    $dot_name = $last_user.'First Name:'.Trim()+"."+$last_user.'Last Name:'.Trim()
-    $email = $dot_name.ToLower()+'@'+$last_user.'Email address:'
-    $title = $last_user.'Title:'
-    $dept = $last_user.'Department:'
+    $name = $listbox.SelectedItem.'First Name:'.Trim() + " " + $listbox.SelectedItem.'Last Name:'.Trim()
+    $dot_name = $listbox.SelectedItem.'First Name:'.Trim()+"."+$listbox.SelectedItem.'Last Name:'.Trim()
+    $email = $dot_name.ToLower()+'@'+$listbox.SelectedItem.'Email address:'
+    $title = $listbox.SelectedItem.'Title:'
+    $dept = $listbox.SelectedItem.'Department:'
 
     New-ADUser -Instance $template_user `
         -Name $name `
