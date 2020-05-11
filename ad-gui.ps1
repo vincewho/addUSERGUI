@@ -132,6 +132,8 @@ function new-kbkguser {
     # $template_user.DistinguishedName.Split(",", 2)[1]
     $new_user | Move-ADObject -TargetPath ($template_user.DistinguishedName.Split(",", 2)[1])
 
+    create_user_folders -folderName $dot_name
+
     Write-Host "Completed"
 
     $select_info_txt3.Text = "Completed"
@@ -186,6 +188,26 @@ function get-instructions {
     
 }
 
+function create_user_folders {
+    param (
+        [string] $folderName 
+    )
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Home$\$($folderName.ToLower())"
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Share_Folders\$($folderName.ToLower())"
+
+    $acl = Get-Acl "\\kbkgfs01\Home$\$($folderName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($folderName)","FullControl","Allow")
+    $acl.SetAccessRule($AccessRule)
+    Set-Acl "\\kbkgfs01\Home$\$($folderName)" $acl
+    
+    Get-Acl '\\kbkgfs01\Share_Folders\0-Krost Contacts' | Set-Acl "\\kbkgfs01\Share_Folders\$($folderName)"
+
+    $acl = Get-Acl "\\kbkgfs01\Share_Folders\$($folderName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($folderName)","FullControl","Allow")
+    $acl.SetAccessRule($AccessRule)
+    Set-Acl "\\kbkgfs01\Share_Folders\$($folderName)" $acl    
+}
+
 #Write your logic code here
 
 [void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
@@ -207,7 +229,7 @@ catch {
 get-instructions
 
 # number of users to display
-$NUMOFUSERS = 5
+$NUMOFUSERS = 10
 
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
