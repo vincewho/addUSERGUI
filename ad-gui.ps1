@@ -67,10 +67,11 @@ $create_btn.Add_Click({ new-kbkguser })
 
 function new-kbkguser {
     param (
-        $selected = $listbox.SelectedItem
+        $selected = $listbox.SelectedItem,
+        $usercount = $NUMOFUSERS
     )
     $hash = $selected.Split(" ")
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
 
     $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
     
@@ -139,10 +140,11 @@ function new-kbkguser {
 
 function get-selectuser { 
     param (
-        $selected = $listbox.SelectedItem
+        $selected = $listbox.SelectedItem,
+        $usercount = $NUMOFUSERS
     )
     $hash = $selected.Split(" ")
-    $users = Import-Excel -path $file -ErrorAction STOP
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
 
     $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
     
@@ -153,9 +155,9 @@ function get-selectuser {
 
 function get-kbkgUser {
     param (
-        $numofusers = 10
+        $usercount = $NUMOFUSERS
     )
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $numofusers
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
     $listbox.Items.Clear()
     
     foreach($user in $users){
@@ -203,6 +205,9 @@ catch {
 # #########################
 # first run, display the instructiosn on how to use.
 get-instructions
+
+# number of users to display
+$NUMOFUSERS = 5
 
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
