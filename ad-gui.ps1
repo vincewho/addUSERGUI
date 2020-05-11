@@ -62,7 +62,7 @@ $create_btn.Font                 = 'Microsoft Sans Serif,10'
 $adgui.controls.AddRange(@($select_info_txt3,$selected_info_txt,$select_info_txt2,$get_users_btn,$listbox,$select_btn,$create_btn))
 
 $get_users_btn.Add_Click({ get-kbkgUser })
-$select_btn.Add_Click({ get-selected })
+$select_btn.Add_Click({ get-selectuser })
 $create_btn.Add_Click({ new-kbkguser })
 
 function new-kbkguser {
@@ -137,22 +137,25 @@ function new-kbkguser {
 
 }
 
-function get-selected { 
+function get-selectuser { 
     param (
         $selected = $listbox.SelectedItem
     )
     $hash = $selected.Split(" ")
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
+    $users = Import-Excel -path $file -ErrorAction STOP
 
     $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
     
     Write-Host $select_usr
-    $selected_info_txt.Text = "You have selected: " + $select_usr.'First Name:' + " " + $select_usr.'Last Name:' 
+    $selected_info_txt.Text = "You have selected: " + $select_usr.'First Name:' + " " + $select_usr.'Last Name:' + " for " + $select_usr.'Department:'
     $select_info_txt2.Text = "Template User: " + $select_usr.'Profile to use for IT set-up:'
 }
 
 function get-kbkgUser {
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
+    param (
+        $numofusers = 10
+    )
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $numofusers
     $listbox.Items.Clear()
     
     foreach($user in $users){
@@ -160,7 +163,7 @@ function get-kbkgUser {
         $user.PSObject.Properties.Remove('Completion time')
         $user.PSObject.Properties.Remove('Email')
         $user.PSObject.Properties.Remove('Name')
-        $listbox.Items.Add(($user."First Name:").Trim() + " " + ($user."Last Name:").Trim() + " in " + $user."Department:")
+        $listbox.Items.Add(($user."First Name:").Trim() + " " + ($user."Last Name:").Trim() + " for " + $user."Department:")
     }
 }
 
@@ -174,6 +177,12 @@ function get-prompt {
     Write-Output $text
 }
 
+function get-instructions {
+    $listbox.Items.Add("1. Click 'Get Users' to pull recent new hires")
+    $listbox.Items.Add("2. Select the appropriate new user to create")
+    $listbox.Items.Add("3. Create user")
+    
+}
 
 #Write your logic code here
 
@@ -190,6 +199,10 @@ try {
 catch {
     Write-Host "Please Install ImportExcel"
 }
+# #########################
+# #########################
+# first run, display the instructiosn on how to use.
+get-instructions
 
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
