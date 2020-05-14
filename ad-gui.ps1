@@ -62,16 +62,15 @@ $create_btn.Font                 = 'Microsoft Sans Serif,10'
 $adgui.controls.AddRange(@($select_info_txt3,$selected_info_txt,$select_info_txt2,$get_users_btn,$listbox,$select_btn,$create_btn))
 
 $get_users_btn.Add_Click({ get-kbkgUser })
-$select_btn.Add_Click({ get-selectuser })
+$select_btn.Add_Click({ get-selected })
 $create_btn.Add_Click({ new-kbkguser })
 
 function new-kbkguser {
     param (
-        $selected = $listbox.SelectedItem,
-        $usercount = $NUMOFUSERS
+        $selected = $listbox.SelectedItem
     )
     $hash = $selected.Split(" ")
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
 
     $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
     
@@ -89,6 +88,7 @@ function new-kbkguser {
     $template_user.UserPrincipalName = $null
     $template_user.GivenName = $select_usr.'First Name:'.Trim()
     $template_user.Surname = $select_usr.'Last Name:'.Trim()
+    $template_user.Office = $select_usr.'Office:'
     $template_user.Mail = ($select_usr.'First Name:'.Trim()+"."+$select_usr.'Last Name:'.Trim()+"@"+$select_usr.'Email address:').ToLower()
 
     # Create user 
@@ -132,34 +132,33 @@ function new-kbkguser {
     # $template_user.DistinguishedName.Split(",", 2)[1]
     $new_user | Move-ADObject -TargetPath ($template_user.DistinguishedName.Split(",", 2)[1])
 
-    create_user_folders -folderName $dot_name
+    # Create s & u folder
+    set-userfolders -fullName $dot_name
 
     Write-Host "Completed"
+    Write-Host -NoNewLine 'Press any key to continue...';
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 
     $select_info_txt3.Text = "Completed"
 
 }
 
-function get-selectuser { 
+function get-selected { 
     param (
-        $selected = $listbox.SelectedItem,
-        $usercount = $NUMOFUSERS
+        $selected = $listbox.SelectedItem
     )
     $hash = $selected.Split(" ")
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
 
     $select_usr = $users | Where-Object { $_."First Name:" -like "$($hash[0])*"  -and $_."Last Name:" -like $hash[1] } | Select-Object -Last 1  
     
     Write-Host $select_usr
-    $selected_info_txt.Text = "You have selected: " + $select_usr.'First Name:' + " " + $select_usr.'Last Name:' + " for " + $select_usr.'Department:'
+    $selected_info_txt.Text = "You have selected: " + $select_usr.'First Name:' + " " + $select_usr.'Last Name:' 
     $select_info_txt2.Text = "Template User: " + $select_usr.'Profile to use for IT set-up:'
 }
 
 function get-kbkgUser {
-    param (
-        $usercount = $NUMOFUSERS
-    )
-    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last $usercount
+    $users = Import-Excel -path $file -ErrorAction STOP | Select-Object -Last 10
     $listbox.Items.Clear()
     
     foreach($user in $users){
@@ -167,13 +166,13 @@ function get-kbkgUser {
         $user.PSObject.Properties.Remove('Completion time')
         $user.PSObject.Properties.Remove('Email')
         $user.PSObject.Properties.Remove('Name')
-        $listbox.Items.Add(($user."First Name:").Trim() + " " + ($user."Last Name:").Trim() + " for " + $user."Department:")
+        $listbox.Items.Add(($user."First Name:").Trim() + " " + ($user."Last Name:").Trim() + " in " + $user."Department:")
     }
 }
 
 function get-prompt { 
     $title = 'Password'
-    $msg   = 'Enter your Password:'
+    $msg   = 'Enter New User Password:'
 
     $text = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title)
     
@@ -181,32 +180,26 @@ function get-prompt {
     Write-Output $text
 }
 
-function get-instructions {
-    $listbox.Items.Add("1. Click 'Get Users' to pull recent new hires")
-    $listbox.Items.Add("2. Select the appropriate new user to create")
-    $listbox.Items.Add("3. Create user")
-    
-}
-
-function create_user_folders {
+function set-userfolders {
     param (
-        [string] $folderName 
+        [string] $fullName 
     )
-    New-Item -ItemType Directory -Path "\\kbkgfs01\Home$\$($folderName.ToLower())"
-    New-Item -ItemType Directory -Path "\\kbkgfs01\Share_Folders\$($folderName.ToLower())"
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Home$\$($fName.ToLower())"
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Share_Folders\$($fName.ToLower())"
 
-    $acl = Get-Acl "\\kbkgfs01\Home$\$($folderName)"
-    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($folderName)","FullControl","Allow")
+    $acl = Get-Acl "\\kbkgfs01\Home$\$($fName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fName)","FullControl","Allow")
     $acl.SetAccessRule($AccessRule)
-    Set-Acl "\\kbkgfs01\Home$\$($folderName)" $acl
+    Set-Acl "\\kbkgfs01\Home$\$($fName)" $acl
     
-    Get-Acl '\\kbkgfs01\Share_Folders\0-Krost Contacts' | Set-Acl "\\kbkgfs01\Share_Folders\$($folderName)"
+    Get-Acl '\\kbkgfs01\Share_Folders\0-Krost Contacts' | Set-Acl "\\kbkgfs01\Share_Folders\$($fName)"
 
-    $acl = Get-Acl "\\kbkgfs01\Share_Folders\$($folderName)"
-    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($folderName)","FullControl","Allow")
+    $acl = Get-Acl "\\kbkgfs01\Share_Folders\$($fName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fName)","FullControl","Allow")
     $acl.SetAccessRule($AccessRule)
-    Set-Acl "\\kbkgfs01\Share_Folders\$($folderName)" $acl    
+    Set-Acl "\\kbkgfs01\Share_Folders\$($fName)" $acl    
 }
+
 
 #Write your logic code here
 
@@ -223,13 +216,6 @@ try {
 catch {
     Write-Host "Please Install ImportExcel"
 }
-# #########################
-# #########################
-# first run, display the instructiosn on how to use.
-get-instructions
-
-# number of users to display
-$NUMOFUSERS = 10
 
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
