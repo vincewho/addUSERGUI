@@ -1,15 +1,49 @@
 <# This form was created using POSHGUI.com  a free online gui designer for PowerShell
 .NAME
-    KBKG adgui
+    test_popup
 #>
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-$adgui                           = New-Object system.Windows.Forms.Form
-$adgui.ClientSize                = '800,400'
-$adgui.text                      = "Active Dir Gui"
-$adgui.TopMost                   = $false
+$Form                            = New-Object system.Windows.Forms.Form
+$Form.ClientSize                 = '600,200'
+$Form.text                       = "Form"
+$Form.TopMost                    = $false
+
+
+$Button1                         = New-Object system.Windows.Forms.Button
+$Button1.text                    = "Prompt Box"
+$Button1.width                   = 100
+$Button1.height                  = 30
+$Button1.location                = New-Object System.Drawing.Point(25,20)
+$Button1.Font                    = 'Microsoft Sans Serif,10'
+
+$output_lbl                      = New-Object system.Windows.Forms.Label
+$output_lbl.text                 = "output_lbl"
+$output_lbl.AutoSize             = $true
+$output_lbl.width                = 300
+$output_lbl.height               = 10
+$output_lbl.location             = New-Object System.Drawing.Point(25,80)
+$output_lbl.Font                 = 'Microsoft Sans Serif,10'
+
+$Form.controls.AddRange(@($Button1,$output_lbl))
+
+$Button1.Add_Click({ get-prompt })
+
+function get-prompt { 
+    $title = 'Demographics'
+    $msg   = 'Enter your demographics:'
+
+    $text = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title)
+
+    $output_lbl.Text = $text
+}
+
+
+#Write your logic code here
+
+[void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 
 $selected_info_txt               = New-Object system.Windows.Forms.Label
 $selected_info_txt.AutoSize      = $true
@@ -200,7 +234,7 @@ function set-userfolders {
     Set-Acl "\\kbkgfs01\Share_Folders\$($fName)" $acl    
 }
 
-
+[void]$Form.ShowDialog()
 #Write your logic code here
 
 [void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
@@ -220,3 +254,4 @@ catch {
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
 [void]$adgui.ShowDialog()
+
