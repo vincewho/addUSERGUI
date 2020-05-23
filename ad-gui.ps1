@@ -1,49 +1,15 @@
 <# This form was created using POSHGUI.com  a free online gui designer for PowerShell
 .NAME
-    test_popup
+    KBKG adgui
 #>
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-$Form                            = New-Object system.Windows.Forms.Form
-$Form.ClientSize                 = '600,200'
-$Form.text                       = "Form"
-$Form.TopMost                    = $false
-
-
-$Button1                         = New-Object system.Windows.Forms.Button
-$Button1.text                    = "Prompt Box"
-$Button1.width                   = 100
-$Button1.height                  = 30
-$Button1.location                = New-Object System.Drawing.Point(25,20)
-$Button1.Font                    = 'Microsoft Sans Serif,10'
-
-$output_lbl                      = New-Object system.Windows.Forms.Label
-$output_lbl.text                 = "output_lbl"
-$output_lbl.AutoSize             = $true
-$output_lbl.width                = 300
-$output_lbl.height               = 10
-$output_lbl.location             = New-Object System.Drawing.Point(25,80)
-$output_lbl.Font                 = 'Microsoft Sans Serif,10'
-
-$Form.controls.AddRange(@($Button1,$output_lbl))
-
-$Button1.Add_Click({ get-prompt })
-
-function get-prompt { 
-    $title = 'Demographics'
-    $msg   = 'Enter your demographics:'
-
-    $text = [Microsoft.VisualBasic.Interaction]::InputBox($msg, $title)
-
-    $output_lbl.Text = $text
-}
-
-
-#Write your logic code here
-
-[void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
+$adgui                           = New-Object system.Windows.Forms.Form
+$adgui.ClientSize                = '800,400'
+$adgui.text                      = "Active Dir Gui"
+$adgui.TopMost                   = $false
 
 $selected_info_txt               = New-Object system.Windows.Forms.Label
 $selected_info_txt.AutoSize      = $true
@@ -214,27 +180,34 @@ function get-prompt {
     Write-Output $text
 }
 
+function get-instructions {
+    $listbox.Items.Add("1. Click 'Get Users' to pull recent new hires")
+    $listbox.Items.Add("2. Select the appropriate new user to create")
+    $listbox.Items.Add("3. Create user")
+    
+}
+
 function set-userfolders {
     param (
         [string] $fullName 
     )
-    New-Item -ItemType Directory -Path "\\kbkgfs01\Home$\$($fName.ToLower())"
-    New-Item -ItemType Directory -Path "\\kbkgfs01\Share_Folders\$($fName.ToLower())"
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Home$\$($fullName.ToLower())"
+    New-Item -ItemType Directory -Path "\\kbkgfs01\Share_Folders\$($fullName.ToLower())"
 
-    $acl = Get-Acl "\\kbkgfs01\Home$\$($fName)"
-    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fName)","FullControl","Allow")
+    $acl = Get-Acl "\\kbkgfs01\Home$\$($fullName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fullName)","FullControl","Allow")
     $acl.SetAccessRule($AccessRule)
-    Set-Acl "\\kbkgfs01\Home$\$($fName)" $acl
+    Set-Acl "\\kbkgfs01\Home$\$($fullName)" $acl
     
-    Get-Acl '\\kbkgfs01\Share_Folders\0-Krost Contacts' | Set-Acl "\\kbkgfs01\Share_Folders\$($fName)"
+    Get-Acl '\\kbkgfs01\Share_Folders\0-Krost Contacts' | Set-Acl "\\kbkgfs01\Share_Folders\$($fullName)"
 
-    $acl = Get-Acl "\\kbkgfs01\Share_Folders\$($fName)"
-    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fName)","FullControl","Allow")
+    $acl = Get-Acl "\\kbkgfs01\Share_Folders\$($fullName)"
+    $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("corp\$($fullName)","FullControl","Allow")
     $acl.SetAccessRule($AccessRule)
-    Set-Acl "\\kbkgfs01\Share_Folders\$($fName)" $acl    
+    Set-Acl "\\kbkgfs01\Share_Folders\$($fullName)" $acl    
 }
 
-[void]$Form.ShowDialog()
+
 #Write your logic code here
 
 [void][Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
@@ -251,7 +224,9 @@ catch {
     Write-Host "Please Install ImportExcel"
 }
 
+# first run, display the instructiosn on how to use.
+get-instructions
+
 # File to grab users
 $file = "\\kbkgfs01\Combined_Firm_Folders\Information Technology\Powershell Script\new_user\Krost CPAs New Hire Request.xlsx"
 [void]$adgui.ShowDialog()
-
